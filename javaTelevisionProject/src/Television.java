@@ -23,7 +23,7 @@ public class Television {
         isOn = false;
         System.out.println(brand + " выключен.");
     }
-    public void baySize(int newSize) {
+    public void setSize(int newSize) {
         if (isOn) {
             size = newSize;
             System.out.println("Норм такой телик. Размер " + size + " дюймов.");
