@@ -3,7 +3,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 
-// Класс Product
 class Product {
     private String name;
     private int price;
@@ -33,11 +32,11 @@ class Product {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Product product = (Product) o;
-        return price == product.price && Objects.equals(name, product.name);
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Product product = (Product) obj;
+        return price == product.price && name.equals(product.name);
     }
 
     @Override
@@ -46,7 +45,6 @@ class Product {
     }
 }
 
-// Класс Person
 class Person {
     private String name;
     private int money;
@@ -80,12 +78,12 @@ class Person {
     }
 
     public void buyProduct(Product product) {
-        if (this.money >= product.getPrice()) {
+        if (this.money < product.getPrice()) {
+            System.out.println(name + " не может позволить себе " + product.getName());
+        } else {
             this.money -= product.getPrice();
             this.products.add(product);
             System.out.println(name + " купил " + product.getName());
-        } else {
-            System.out.println(name + " не может позволить себе " + product.getName());
         }
     }
 
@@ -101,101 +99,117 @@ class Person {
         sb.delete(sb.length() - 2, sb.length()); // Убираем последнюю запятую
         return sb.toString();
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Person person = (Person) o;
-        return money == person.money && Objects.equals(name, person.name) && Objects.equals(products, person.products);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, money, products);
-    }
 }
 
-// Основной класс с методом main
 public class App {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // Создание пользователей
-        Person p1 = new Person("Павел Андреевич", 10000);
-        Person p2 = new Person("Анна Петровна", 2000);
-        Person p3 = new Person("Борис", 10);
-
-        // Создание продуктов
-        Product bread = new Product("Хлеб", 40);
-        Product milk = new Product("Молоко", 60);
-        Product cake = new Product("Торт", 1000);
-        Product coffee = new Product("Кофе растворимый", 879);
-        Product butter = new Product("Масло", 150);
-
-        // Список покупателей и продуктов
+        // Списки покупателей и продуктов
         List<Person> persons = new ArrayList<>();
-        persons.add(p1);
-        persons.add(p2);
-        persons.add(p3);
-
         List<Product> products = new ArrayList<>();
-        products.add(bread);
-        products.add(milk);
-        products.add(cake);
-        products.add(coffee);
-        products.add(butter);
 
-        // Цикл покупок
+        // Ввод данных о покупателях (одна строка)
+        System.out.println("Введите данные о покупателях (например: 'Павел Андреевич = 10000; Анна Петровна = 2000; Борис = 10'): ");
+        String personsData = scanner.nextLine();
+        String[] personsArray = personsData.split(";");
+
+        // Разбор строки и создание объектов Person
+        for (String personData : personsArray) {
+            personData = personData.trim();
+            String[] parts = personData.split("=");
+
+            if (parts.length == 2) {
+                try {
+                    String name = parts[0].trim();
+                    int money = Integer.parseInt(parts[1].trim());
+                    Person person = new Person(name, money);
+                    persons.add(person);
+                } catch (NumberFormatException e) {
+                    System.out.println("Ошибка ввода для покупателя: " + personData);
+                } catch (IllegalArgumentException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+        }
+
+        // Ввод данных о продуктах (одна строка)
+        System.out.println("Введите данные о продуктах (например: 'Хлеб = 40; Молоко = 60; Торт = 1000'): ");
+        String productsData = scanner.nextLine();
+        String[] productsArray = productsData.split(";");
+
+        // Разбор строки и создание объектов Product
+        for (String productData : productsArray) {
+            productData = productData.trim();
+            String[] parts = productData.split("=");
+
+            if (parts.length == 2) {
+                try {
+                    String productName = parts[0].trim();
+                    int productPrice = Integer.parseInt(parts[1].trim());
+                    Product product = new Product(productName, productPrice);
+                    products.add(product);
+                } catch (NumberFormatException e) {
+                    System.out.println("Ошибка ввода для продукта: " + productData);
+                } catch (IllegalArgumentException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+        }
+
+        // Цикл, в котором покупатели покупают продукты по очереди
         while (true) {
-            System.out.println("Введите покупку: имя покупателя и продукт (или END для завершения)");
-            String line = scanner.nextLine();
-            if (line.equals("END")) {
+            System.out.println("\nВведите покупку в формате 'Имя покупателя - Продукт' или 'END' для завершения:");
+            String purchaseData = scanner.nextLine().trim();
+
+            if (purchaseData.equals("END")) {
                 break;
             }
 
-            String[] input = line.split(" - ");
-            if (input.length != 2) {
-                System.out.println("Некорректный ввод");
+            // Разделение строки на имя покупателя и продукт
+            String[] purchaseParts = purchaseData.split("-");
+            if (purchaseParts.length != 2) {
+                System.out.println("Ошибка ввода. Используйте формат 'Имя покупателя - Продукт'.");
                 continue;
             }
 
-            String buyerName = input[0].trim();
-            String productName = input[1].trim();
+            String personName = purchaseParts[0].trim();
+            String productName = purchaseParts[1].trim();
 
-            // Находим покупателя по имени
-            Person buyer = null;
-            for (Person person : persons) {
-                if (person.getName().equals(buyerName)) {
-                    buyer = person;
+            // Поиск покупателя
+            Person person = null;
+            for (Person p : persons) {
+                if (p.getName().trim().equalsIgnoreCase(personName.trim())) { // Используем trim()
+                    person = p;
                     break;
                 }
             }
 
-            if (buyer == null) {
-                System.out.println("Покупатель не найден");
+            if (person == null) {
+                System.out.println("Покупатель с таким именем не найден!");
                 continue;
             }
 
-            // Находим продукт по названию
+            // Поиск продукта
             Product selectedProduct = null;
-            for (Product product : products) {
-                if (product.getName().equals(productName)) {
-                    selectedProduct = product;
+            for (Product p : products) {
+                if (p.getName().trim().equalsIgnoreCase(productName.trim())) { // Используем trim()
+                    selectedProduct = p;
                     break;
                 }
             }
 
             if (selectedProduct == null) {
-                System.out.println("Продукт не найден");
+                System.out.println("Продукт с таким названием не найден!");
                 continue;
             }
 
-            // Покупка продукта
-            buyer.buyProduct(selectedProduct);
+            // Попытка купить продукт
+            person.buyProduct(selectedProduct);
         }
 
-        // Печать итогов
+        // Печать итогов покупок
+        System.out.println("\nИтоги покупок:");
         for (Person person : persons) {
             System.out.println(person);
         }
