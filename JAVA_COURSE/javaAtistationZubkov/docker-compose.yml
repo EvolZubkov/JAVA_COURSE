@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: orders-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: orders
+      POSTGRES_USER: orders
+      POSTGRES_PASSWORD: orders
+      # Для корректной сортировки/сравнения строк в UTF-8:
+      LANG: en_US.utf8
+      LC_ALL: en_US.utf8
+    ports:
+      - "55432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Опционально: положишь *.sql в ./init — они выполнятся один раз при первом старте
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orders -d orders -h 127.0.0.1"]
+      interval: 3s
+      timeout: 2s
+      retries: 10
+
+  # Лёгкий веб-клиент для БД (зайти в браузере на http://localhost:8080)
+  adminer:
+    image: adminer:latest
+    container_name: orders-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
