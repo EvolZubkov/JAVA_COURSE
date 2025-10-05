@@ -1,0 +1,20 @@
+@"
+# Java build output
+/out/
+/target/
+/build/
+/*.class
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Runtime data
+save.txt
+scores.csv
+"@ | Set-Content -Encoding UTF8 .gitignore
